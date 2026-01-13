@@ -95,8 +95,9 @@
 
 ### 前置要求（简化版）
 
-- Node.js 18.0.0+
+- Python 3.8+
 - MySQL 8.0+
+- pip（Python 包管理器）
 - （无需 Redis）
 - Docker（可选）
 
@@ -121,12 +122,26 @@
    docker-compose up -d
    ```
 
-4. **初始化后端**
+4. **初始化后端（Django）**
    ```bash
    cd backend
-   npm install
-   npx prisma migrate dev
-   npm run dev
+   
+   # 创建虚拟环境
+   python -m venv venv
+   
+   # 激活虚拟环境
+   # Windows: venv\Scripts\activate
+   # Linux/Mac: source venv/bin/activate
+   
+   # 安装依赖
+   pip install -r requirements.txt
+   
+   # 数据库迁移
+   python manage.py makemigrations
+   python manage.py migrate
+   
+   # 启动服务器
+   python manage.py runserver
    ```
 
 5. **初始化前端**
@@ -186,9 +201,9 @@ e-commerce/
 - **HTTP 客户端**: Axios
 
 ### 后端
-- **运行时**: Node.js 18+
-- **框架**: Express.js / NestJS（完整版）或 Express.js（简化版）
-- **ORM**: Prisma
+- **运行时**: Python 3.8+（简化版）或 Node.js 18+（完整版）
+- **框架**: Django（简化版）或 Express.js / NestJS（完整版）
+- **ORM**: Django ORM（简化版）或 Prisma（完整版）
 - **数据库**: MySQL 8.0
 - **缓存**: Redis 7.0（完整版）或 无（简化版）
 - **认证**: JWT

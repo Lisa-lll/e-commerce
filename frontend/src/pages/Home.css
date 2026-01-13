@@ -1,0 +1,53 @@
+.home {
+  padding: 0;
+}
+
+.home-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.home-header h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+  color: #1890ff;
+}
+
+.home-header p {
+  font-size: 16px;
+  color: #666;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.products-container {
+  margin-top: 20px;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .home-header h1 {
+    font-size: 24px;
+  }
+
+  .home-header p {
+    font-size: 14px;
+  }
+
+  .home-header > div {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .home-header > div > * {
+    width: 100% !important;
+  }
+}

@@ -1,0 +1,191 @@
+// Prisma Schema - 简化版电商系统
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// 用户表（可选，支持未登录用户下单）
+model User {
+  id            BigInt      @id @default(autoincrement())
+  username      String      @unique @db.VarChar(50)
+  passwordHash  String      @db.VarChar(255)
+  nickname      String?     @db.VarChar(50)
+  avatarUrl     String?     @db.VarChar(255)
+  status        Int         @default(1) // 1-正常, 0-禁用
+  lastLoginAt   DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  addresses     UserAddress[]
+  cartItems     CartItem[]
+  orders        Order[]
+
+  @@index([username])
+  @@index([status])
+  @@map("users")
+}
+
+// 用户收货地址表（仅登录用户）
+model UserAddress {
+  id            BigInt      @id @default(autoincrement())
+  userId        BigInt
+  receiverName  String      @db.VarChar(50)
+  receiverPhone String      @db.VarChar(20)
+  province      String      @db.VarChar(50)
+  city          String      @db.VarChar(50)
+  district      String      @db.VarChar(50)
+  address       String      @db.VarChar(255)
+  postalCode    String?     @db.VarChar(10)
+  isDefault     Int         @default(0) // 0-否, 1-是
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_addresses")
+}
+
+// 商品分类表（最多二级）
+model Category {
+  id            BigInt      @id @default(autoincrement())
+  parentId      BigInt      @default(0) // 0表示顶级分类
+  name          String      @db.VarChar(100)
+  imageUrl      String?     @db.VarChar(255)
+  sortOrder     Int         @default(0)
+  isShow        Int         @default(1) // 1-显示, 0-隐藏
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  products      Product[]
+
+  @@index([parentId])
+  @@index([isShow])
+  @@map("categories")
+}
+
+// 商品表
+model Product {
+  id            BigInt      @id @default(autoincrement())
+  categoryId    BigInt
+  name          String      @db.VarChar(200)
+  subtitle      String?     @db.VarChar(255)
+  mainImageUrl  String?     @db.VarChar(255)
+  detail        String?     @db.Text
+  price         Decimal     @db.Decimal(10, 2)
+  originalPrice Decimal?    @db.Decimal(10, 2)
+  stock         Int         @default(0)
+  salesCount    Int         @default(0)
+  viewCount     Int         @default(0)
+  status        Int         @default(1) // 1-上架, 0-下架
+  sortOrder     Int         @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  category      Category    @relation(fields: [categoryId], references: [id])
+  images        ProductImage[]
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+
+  @@index([categoryId])
+  @@index([status])
+  @@index([name])
+  @@map("products")
+}
+
+// 商品图片表
+model ProductImage {
+  id            BigInt      @id @default(autoincrement())
+  productId     BigInt
+  imageUrl      String      @db.VarChar(255)
+  sortOrder     Int         @default(0)
+  createdAt     DateTime    @default(now())
+
+  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+// 购物车表（仅登录用户）
+model CartItem {
+  id            BigInt      @id @default(autoincrement())
+  userId        BigInt
+  productId     BigInt
+  quantity      Int         @default(1)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@map("cart_items")
+}
+
+// 订单表（支持未登录用户，user_id 可为空）
+model Order {
+  id            BigInt      @id @default(autoincrement())
+  orderNo       String      @unique @db.VarChar(32)
+  userId        BigInt?     // 可为空，支持未登录用户
+  status        Int         @default(1) // 1-待付款, 2-待发货, 3-待收货, 4-已完成, 5-已取消
+  totalAmount   Decimal     @db.Decimal(10, 2)
+  freightAmount Decimal     @default(0) @db.Decimal(10, 2)
+  payAmount     Decimal     @db.Decimal(10, 2)
+  receiverName  String      @db.VarChar(50)
+  receiverPhone String      @db.VarChar(20)
+  receiverAddress String    @db.VarChar(500)
+  remark        String?     @db.VarChar(500)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items         OrderItem[]
+
+  @@index([userId])
+  @@index([orderNo])
+  @@index([status])
+  @@index([createdAt])
+  @@index([receiverPhone])
+  @@map("orders")
+}
+
+// 订单商品明细表
+model OrderItem {
+  id            BigInt      @id @default(autoincrement())
+  orderId       BigInt
+  productId     BigInt
+  productName   String      @db.VarChar(200) // 快照
+  productImage  String?     @db.VarChar(255) // 快照
+  price         Decimal     @db.Decimal(10, 2) // 快照
+  quantity      Int
+  totalAmount   Decimal     @db.Decimal(10, 2)
+  createdAt     DateTime    @default(now())
+
+  order         Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product       Product     @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+// 管理员表（简化权限，单角色）
+model Admin {
+  id            BigInt      @id @default(autoincrement())
+  username      String      @unique @db.VarChar(50)
+  passwordHash  String      @db.VarChar(255)
+  name          String?     @db.VarChar(50)
+  status        Int         @default(1) // 1-正常, 0-禁用
+  lastLoginAt   DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([username])
+  @@index([status])
+  @@map("admins")
+}

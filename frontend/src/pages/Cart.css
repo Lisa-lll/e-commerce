@@ -1,0 +1,78 @@
+.cart {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.cart-summary {
+  margin-top: 20px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.total-price {
+  font-size: 24px;
+  color: #ff4d4f;
+  font-weight: bold;
+}
+
+.cart-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .cart {
+    padding: 10px;
+  }
+
+  .cart h1 {
+    font-size: 20px;
+  }
+
+  .cart .ant-table {
+    font-size: 12px;
+  }
+
+  .cart .ant-table-thead > tr > th {
+    padding: 8px 4px !important;
+    font-size: 12px;
+  }
+
+  .cart .ant-table-tbody > tr > td {
+    padding: 8px 4px !important;
+    font-size: 12px;
+  }
+
+  .cart .ant-table-tbody img {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .summary-row {
+    font-size: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .total-price {
+    font-size: 20px;
+  }
+
+  .cart-actions {
+    flex-direction: column;
+  }
+
+  .cart-actions > * {
+    width: 100%;
+  }
+}
